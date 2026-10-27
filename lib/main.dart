@@ -1,54 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
-  runApp(const CarelderApp() as Widget);
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    debugPrint('Firebase initialization warning: $e');
+  }
+
+  runApp(const CARELDERApp());
 }
 
-class CarelderApp {
-  const new();
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class CARELDERApp extends StatelessWidget {
+  const CARELDERApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
+      title: 'CARELDER',
       home: Scaffold(
-        backgroundColor: Colors.white,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.health_and_safety,
-                size: 100,
-                color: Colors.blue,
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'CARELDER',
-                style: TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Text(
-                'The Care For Elderly',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 40),
-              ElevatedButton(
-                onPressed: () {},
-                child: const Text('Get Started'),
-              ),
-            ],
-          ),
-        ),
+        appBar: AppBar(title: const Text('CARELDER')),
+        body: const Center(child: Text('Welcome to CARELDER')),
       ),
     );
   }
