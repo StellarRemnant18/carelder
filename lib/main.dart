@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -9,6 +10,7 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
   } catch (e) {
     debugPrint('Firebase initialization warning: $e');
   }
@@ -25,7 +27,14 @@ class CARELDERApp extends StatelessWidget {
       title: 'CARELDER',
       home: Scaffold(
         appBar: AppBar(title: const Text('CARELDER')),
-        body: const Center(child: Text('Welcome to CARELDER')),
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () {
+              throw Exception('Test Crash');
+            },
+            child: const Text('Test Crash'),
+          ),
+        ),
       ),
     );
   }
