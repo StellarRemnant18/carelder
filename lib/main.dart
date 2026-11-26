@@ -1,55 +1,15 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const CarelderApp() as Widget);
-}
+import 'app.dart';
+import 'core/app_state.dart';
+import 'services/firebase_bootstrap.dart';
 
-class CarelderApp {
-  const new();
-}
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final controller = AppController();
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        backgroundColor: Colors.white,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.health_and_safety,
-                size: 100,
-                color: Colors.blue,
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'CARELDER',
-                style: TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Text(
-                'The Care For Elderly',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 40),
-              ElevatedButton(
-                onPressed: () {},
-                child: const Text('Get Started'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  await FirebaseBootstrap.initialize(controller);
+
+  runApp(AppScope(controller: controller, child: const CarelderApp()));
 }

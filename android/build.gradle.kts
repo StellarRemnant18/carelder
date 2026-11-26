@@ -1,3 +1,9 @@
+plugins{
+    id("com.android.application") version "9.1.0" apply false
+    // Add the dependency for the Performance Monitoring Gradle plugin
+    id("com.google.firebase.firebase-perf") version "2.0.2" apply false
+}
+
 allprojects {
     repositories {
         google()
@@ -19,6 +25,3 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
-tasks.register<Delete>("clean") {
-    delete(rootProject.layout.buildDirectory)
-}
