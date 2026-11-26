@@ -26,7 +26,7 @@ configure<com.android.build.api.dsl.ApplicationExtension> {
         applicationId = "com.example.carelder"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 26
         targetSdk = flutter.targetSdkVersion
         // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
         // is added automatically by Flutter. (https://developer.android.com/studio/build/configure-apk-splits#configure-APK-versions)
@@ -63,5 +63,7 @@ dependencies {
     // Add the dependency for the Performance Monitoring library
     // When using the BoM, you don't specify versions in Firebase library dependencies
     implementation("com.google.firebase:firebase-perf")
+    
+    implementation("androidx.health.connect:connect-client:1.1.0")
 }
 

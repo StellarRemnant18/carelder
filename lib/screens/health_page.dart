@@ -1,9 +1,109 @@
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../widgets/app_widgets.dart';
+import '../services/health_connect_service.dart';
 
-class HealthPage extends StatelessWidget {
+class HealthPage extends StatefulWidget {
   const HealthPage({super.key});
+
+  @override
+  State<HealthPage> createState() => _HealthPageState();
+}
+
+class _HealthPageState extends State<HealthPage> {
+  final HealthConnectService _healthConnect = HealthConnectService();
+
+  String _healthConnectStatus = 'Not connected';
+  bool _healthConnectConnected = false;
+  bool _isCheckingHealthConnect = false;
+
+  Future<void> _connectHealthConnect() async {
+    if (_isCheckingHealthConnect) return;
+
+    setState(() {
+      _isCheckingHealthConnect = true;
+      _healthConnectStatus = 'Checking...';
+    });
+
+    try {
+      final availability = await _healthConnect.checkAvailability();
+
+      if (!mounted) return;
+
+      if (availability != 'available') {
+        setState(() {
+          _healthConnectConnected = false;
+          _healthConnectStatus =
+              availability == 'update_required'
+                  ? 'Update required'
+                  : 'Unavailable';
+        });
+        return;
+      }
+
+      final permissions =
+          await _healthConnect.requestPermissions();
+
+      if (!mounted) return;
+
+      final stepsGranted = permissions['steps'] ?? false;
+      final heartRateGranted = permissions['heartRate'] ?? false;
+
+      setState(() {
+        _healthConnectConnected =
+            stepsGranted && heartRateGranted;
+
+        if (_healthConnectConnected) {
+          _healthConnectStatus = 'Access allowed';
+        } else if (stepsGranted || heartRateGranted) {
+          _healthConnectStatus = 'Partially allowed';
+        } else {
+          _healthConnectStatus = 'Permission denied';
+        }
+      });
+    } on PlatformException catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _healthConnectConnected = false;
+        _healthConnectStatus = 'Connection error';
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message ?? 'Health Connect error'),
+        ),
+      );
+    } on MissingPluginException {
+      if (!mounted) return;
+
+      setState(() {
+        _healthConnectConnected = false;
+        _healthConnectStatus = 'Restart required';
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _healthConnectConnected = false;
+        _healthConnectStatus = 'Connection error';
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unexpected error: $e'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCheckingHealthConnect = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,15 +210,12 @@ class HealthPage extends StatelessWidget {
         IntegrationTile(
           icon: Icons.health_and_safety_rounded,
           title: 'Health Connect',
-          subtitle: 'Android health-data access layer',
-          status: 'Not connected',
-          onTap: () => showInfoDialog(
-            context,
-            title: 'Health Connect',
-            message:
-                'The Android SDK, manifest declarations and data permissions '
-                'must be added and tested before this screen can read records.',
-          ),
+          subtitle: _isCheckingHealthConnect
+              ? 'Checking connection...'
+              : 'Tap to check availability and grant permissions',
+          status: _healthConnectStatus,
+          connected: _healthConnectConnected,
+          onTap: _connectHealthConnect,
         ),
         const SizedBox(height: 18),
         const EmptyState(
@@ -133,7 +230,11 @@ class HealthPage extends StatelessWidget {
           'Health information in CaringMate is intended to support personal '
           'record keeping. It is not a diagnosis or a substitute for qualified '
           'medical advice.',
-          style: TextStyle(color: Colors.black54, fontSize: 11, height: 1.4),
+          style: TextStyle(
+            color: Colors.black54,
+            fontSize: 11,
+            height: 1.4,
+          ),
         ),
       ],
     );

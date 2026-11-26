@@ -22,7 +22,7 @@ class ServicesPage extends StatelessWidget {
           color: const Color(0xFF347AC5),
           title: 'Hospital search',
           description:
-              'Hospital search interface prepared for Maps integration.',
+              'Search nearby hospitals with your location and Geoapify.',
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute<void>(builder: (_) => const HospitalSearchPage()),

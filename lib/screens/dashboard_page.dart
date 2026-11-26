@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/app_state.dart';
 import '../core/app_theme.dart';
 import '../widgets/app_widgets.dart';
 import 'hospital_search_page.dart';
@@ -69,7 +70,7 @@ class DashboardPage extends StatelessWidget {
               crossAxisCount: columns,
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,
-              childAspectRatio: width >= 800 ? 1.45 : 1.20,
+              childAspectRatio: 1.20,
             ),
           ),
         ),
@@ -109,6 +110,7 @@ class DashboardPage extends StatelessWidget {
 class _TopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final unreadCount = AppScope.of(context).unreadNotificationCount;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
       child: Row(
@@ -153,7 +155,11 @@ class _TopBar extends StatelessWidget {
                 builder: (_) => const NotificationsPage(),
               ),
             ),
-            icon: const Icon(Icons.notifications_none_rounded),
+            icon: Badge(
+              isLabelVisible: unreadCount > 0,
+              label: Text(unreadCount > 99 ? '99+' : '$unreadCount'),
+              child: const Icon(Icons.notifications_none_rounded),
+            ),
           ),
         ],
       ),

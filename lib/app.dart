@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'core/app_state.dart';
 import 'core/app_theme.dart';
-import 'screens/app_shell.dart';
+import 'screens/auth_gate.dart';
 
 class CarelderApp extends StatelessWidget {
   const CarelderApp({super.key});
@@ -16,7 +16,7 @@ class CarelderApp extends StatelessWidget {
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: controller.themeMode,
-      home: const AppShell(),
+      home: const AuthGate(),
     );
   }
 }

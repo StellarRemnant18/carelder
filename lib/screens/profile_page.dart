@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 
 import '../core/app_state.dart';
+import '../models/auth_user.dart';
+import '../services/auth_service.dart';
+import '../services/firebase_auth_service.dart';
 import '../widgets/app_widgets.dart';
 import 'notifications_page.dart';
 import 'settings_page.dart';
 
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+  const ProfilePage({super.key, required this.user, required this.authService});
+
+  final AuthUser user;
+  final AuthService authService;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +34,9 @@ class ProfilePage extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                'CaringMate user',
+                user.displayName?.trim().isNotEmpty == true
+                    ? user.displayName!
+                    : 'CaringMate user',
                 style: TextStyle(
                   fontSize: 19,
                   color: Theme.of(context).colorScheme.onSurface,
@@ -36,8 +44,9 @@ class ProfilePage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Profile details are not configured',
+              Text(
+                user.email ??
+                    'Signed in with ${_providerLabel(user.providerId)}',
                 style: TextStyle(color: Colors.black54, fontSize: 12),
               ),
               const SizedBox(height: 14),
@@ -46,12 +55,15 @@ class ProfilePage extends StatelessWidget {
                   context,
                   title: 'Profile editing',
                   message:
-                      'Connect Firebase Authentication and a secure profile '
-                      'repository before enabling personal profile editing.',
+                      'Your account name and email come from your sign-in '
+                      'provider. Editing additional profile details requires '
+                      'a secure profile repository, which is not configured.',
                 ),
                 icon: const Icon(Icons.edit_outlined),
                 label: const Text('Edit profile'),
               ),
+              const SizedBox(height: 8),
+              _SignOutButton(authService: authService),
             ],
           ),
         ),
@@ -110,6 +122,84 @@ class ProfilePage extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+String _providerLabel(String? providerId) {
+  switch (providerId) {
+    case 'google.com':
+      return 'Google';
+    case 'github.com':
+      return 'GitHub';
+    default:
+      return 'your account';
+  }
+}
+
+class _SignOutButton extends StatefulWidget {
+  const _SignOutButton({required this.authService});
+
+  final AuthService authService;
+
+  @override
+  State<_SignOutButton> createState() => _SignOutButtonState();
+}
+
+class _SignOutButtonState extends State<_SignOutButton> {
+  bool _isSigningOut = false;
+
+  Future<void> _signOut() async {
+    if (_isSigningOut) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Sign out?'),
+        content: const Text('You will need to sign in again to continue.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Sign out'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final controller = AppScope.of(context);
+    setState(() => _isSigningOut = true);
+    try {
+      await widget.authService.signOut();
+      controller.clearSessionData();
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(authErrorMessage(error))));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSigningOut = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: _isSigningOut ? null : _signOut,
+      icon: _isSigningOut
+          ? const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : const Icon(Icons.logout),
+      label: Text(_isSigningOut ? 'Signing out...' : 'Sign out'),
     );
   }
 }

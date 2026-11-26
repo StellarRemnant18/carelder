@@ -82,6 +82,16 @@ class AppController extends ChangeNotifier {
     _notifications.clear();
     notifyListeners();
   }
+
+  void clearSessionData() {
+    if (_waterIntakeMl == 0 && _medications.isEmpty && _notifications.isEmpty) {
+      return;
+    }
+    _waterIntakeMl = 0;
+    _medications.clear();
+    _notifications.clear();
+    notifyListeners();
+  }
 }
 
 class AppScope extends InheritedNotifier<AppController> {
